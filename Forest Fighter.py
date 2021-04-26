@@ -7,6 +7,9 @@ img_dir = path.join(path.dirname(__file__), 'img')
 WIDTH = 600
 HEIGHT = 480
 FPS = 60
+time = 30
+score = 0
+health = 10
 
 # define colors
 WHITE = (255, 255, 255)
@@ -22,6 +25,14 @@ pygame.mixer.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("")
 clock = pygame.time.Clock()
+
+font_name = pygame.font.match_font('arial')
+def draw_text(surf, text, size, x, y):
+    font = pygame.font.Font(font_name, size)
+    text_surface = font.render(text, True, BLACK)
+    text_rect = text_surface.get_rect()
+    text_rect.midtop = (x, y)
+    surf.blit(text_surface, text_rect)
 
 class Player(pygame.sprite.Sprite):
     def __init__(self):
@@ -65,6 +76,8 @@ class Mob(pygame.sprite.Sprite):
         if self.rect.top > 0 or self.rect.bottom > HEIGHT:
             self.speedy = 0
         if self.rect.left < -10:
+            global health
+            health-=1
             self.rect.centerx = random.randrange(WIDTH, 700)
             self.rect.centery = random.randrange(0, HEIGHT)
             self.speedy = random.randrange(-4, 4)
@@ -88,6 +101,8 @@ for i in range(4):
 # Game loop
 running = True
 while running:
+    if health <= 0:
+        running = False
     # keep loop running at the right speed
     clock.tick(FPS)
     # Process input (events)
@@ -105,12 +120,17 @@ while running:
         m = Mob()
         all_sprites.add(m)
         mobs.add(m)
+        score+=1
+        time-=1/FPS
 
-    # Draw / render
+
+    # Drawing and rendering
     screen.fill(BLACK)
     screen.blit(background,background_rect)
     all_sprites.draw(screen)
-    # *after* drawing everything, flip the display
+    draw_text(screen, str(score), 18, WIDTH / 2, 10)
+    draw_text(screen, str(health), 18, WIDTH - 580, 10)
+    # flip the display after drawing
     pygame.display.flip()
 
 pygame.quit()
